@@ -11,6 +11,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import { submitOnboarding } from "./actions"
+import SchoolInput from "@/components/SchoolInput"
 
 export default function OnboardingClient() {
 	const router = useRouter()
@@ -73,21 +74,7 @@ export default function OnboardingClient() {
 					</CardHeader>
 					<CardContent>
 						<form className="space-y-6" onSubmit={handleSubmit}>
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-foreground" htmlFor="school">
-									학교
-								</label>
-								<input
-									id="school"
-									name="school"
-									type="text"
-									placeholder="OO고등학교"
-									value={school}
-									onChange={(event) => setSchool(event.target.value)}
-									className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
-									required
-								/>
-							</div>
+							<SchoolInput value={school} onChange={setSchool} />
 
 							<div className="grid gap-6 md:grid-cols-2">
 								<div className="space-y-2">
