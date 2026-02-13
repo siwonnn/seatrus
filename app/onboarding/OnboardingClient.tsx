@@ -42,7 +42,7 @@ export default function OnboardingClient() {
 			})
 
 			if (result.ok) {
-				router.push("/")
+				router.push("/app")
 			} else {
 				setError("설정 중 오류가 발생했습니다. " + result.message)
 			}

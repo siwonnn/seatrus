@@ -13,13 +13,9 @@ import {
   Shield,
   Check,
 } from "lucide-react"
-import { signIn, signOut } from "next-auth/react"
+import { signIn } from "next-auth/react"
 
-export interface HomeProps {
-  isLoggedIn: boolean
-}
-
-export default function HomeClient({ isLoggedIn }: HomeProps) {
+export default function HomeClient() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -43,17 +39,9 @@ export default function HomeClient({ isLoggedIn }: HomeProps) {
             </a>
           </nav>
           <div className="flex items-center gap-3">
-            { isLoggedIn ? (
-              <Button variant="ghost" size="sm" onClick={() => signOut()} className="hidden md:inline-flex">
-                로그아웃
-              </Button>
-            )
-            : (
-              <Button variant="ghost" size="sm" onClick={() => signIn()} className="hidden md:inline-flex">
-                로그인
-              </Button>
-            )
-            }
+            <Button variant="ghost" size="sm" onClick={() => signIn()} className="hidden md:inline-flex">
+              로그인
+            </Button>
           </div>
         </div>
       </header>

@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
   // check if user completed onboarding
   const appUser = await getAppUser(session.user.id)  
   if (appUser?.onboarded) {
-    redirect("/")
+    redirect("/app")
   }
 
   return <OnboardingClient />
