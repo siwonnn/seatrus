@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import NaverProvider from "next-auth/providers/naver"
 import KakaoProvider from "next-auth/providers/kakao"
 import { UserFields } from "@/types/next-auth"
+import { initializeAppUser } from "@/lib/database/users"
 
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter({
@@ -34,4 +35,9 @@ export const authOptions: NextAuthOptions = {
       return session
     },
   },
+  events: {
+    async createUser({ user }) {
+      await initializeAppUser(user.id, user.name || null, user.email || null)
+    }
+  }
 }
