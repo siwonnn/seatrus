@@ -3,6 +3,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Hide scrollbar */
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   /* Citrus-themed color palette: tangerine orange primary, lime green accents, fresh cream backgrounds */
   --background: #fffbf5;
