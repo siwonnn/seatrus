@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Student } from "@/types/database"
 import { addStudent, removeStudent } from "./actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, User, UserPlus } from "lucide-react"
 
@@ -20,8 +21,6 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
   const [error, setError] = useState("")
   const numberInputRef = useRef<HTMLInputElement>(null)
 
-
-
   const handleAddStudent = async () => {
     if (!classId) {
       setError("학급 정보가 없습니다.")
@@ -30,18 +29,20 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
 
     const number = parseInt(studentNumber)
     const name = studentName.trim()
-
+    
     if (!studentNumber || isNaN(number) || number <= 0) {
       setError("번호를 올바르게 입력해주세요.")
       return
     }
-
+    
     if (!name) {
       setError("이름을 입력해주세요.")
       return
     }
-
+    
     setIsLoading(true)
+    setStudentNumber("")
+    setStudentName("")
     setError("")
 
     const result = await addStudent({
@@ -53,8 +54,6 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
 
     if (result.success && result.student) {
       setStudents([...students, result.student].sort((a, b) => a.number - b.number))
-      setStudentNumber("")
-      setStudentName("")
     } else {
       setError(result.error || "학생 추가에 실패했습니다.")
     }
@@ -111,7 +110,7 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
         <CardContent>
           <div className="flex gap-3">
             <div className="w-24">
-              <input
+              <Input
                 ref={numberInputRef}
                 type="number"
                 min="1"
@@ -119,19 +118,15 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
                 value={studentNumber}
                 onChange={(event) => setStudentNumber(event.target.value)}
                 onKeyDown={handleKeyPress}
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
-                disabled={isLoading}
               />
             </div>
             <div className="flex-1">
-              <input
+              <Input
                 type="text"
                 placeholder="이름"
                 value={studentName}
                 onChange={(event) => setStudentName(event.target.value)}
                 onKeyDown={handleKeyPress}
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
-                disabled={isLoading}
               />
             </div>
             <Button
