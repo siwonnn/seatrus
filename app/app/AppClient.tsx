@@ -29,7 +29,7 @@ export default function AppClient({ user, organizationName, classData }: AppClie
       case "create-seats":
         return <CreateSeats />
       case "student-management":
-        return <StudentManagement />
+        return <StudentManagement classId={classData?.id || null} />
       case "seat-settings":
         return <SeatSettings />
       case "history":
@@ -40,8 +40,6 @@ export default function AppClient({ user, organizationName, classData }: AppClie
         return <CreateSeats />
     }
   }
-
-  const headerText = `${organizationName || "학교"} ${classData?.grade}학년 ${classData?.class_name}반`
 
   return (
     <div className="flex h-screen bg-background">
