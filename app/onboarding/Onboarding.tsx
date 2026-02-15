@@ -13,7 +13,7 @@ import {
 import { submitOnboarding } from "./actions"
 import SchoolInput from "@/components/SchoolInput"
 
-export default function OnboardingClient() {
+export default function Onboarding() {
 	const router = useRouter()
 	const [school, setSchool] = useState("")
 	const [grade, setGrade] = useState<number | "">("")
@@ -42,7 +42,7 @@ export default function OnboardingClient() {
 			})
 
 			if (result.ok) {
-				router.push("/app")
+				router.push("/create-seats")
 			} else {
 				setError("설정 중 오류가 발생했습니다. " + result.message)
 			}

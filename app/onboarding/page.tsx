@@ -1,7 +1,7 @@
 import { getServerSideSession } from "@/lib/session"
 import { getAppUser } from "@/lib/database/users"
 import { redirect } from "next/navigation"
-import OnboardingClient from "./OnboardingClient"
+import Onboarding from "./Onboarding"
 
 export default async function OnboardingPage() {
   const session = await getServerSideSession()
@@ -13,8 +13,8 @@ export default async function OnboardingPage() {
   // check if user completed onboarding
   const appUser = await getAppUser(session.user.id)  
   if (appUser?.onboarded) {
-    redirect("/app")
+    redirect("/create-seats")
   }
 
-  return <OnboardingClient />
+  return <Onboarding />
 }

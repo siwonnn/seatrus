@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
-export default function LoginClient() {
+export default function Login() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-background via-secondary/30 to-accent/20 px-6 py-12">
       <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />

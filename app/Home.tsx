@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { signIn } from "next-auth/react"
 
-export default function HomeClient() {
+export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
