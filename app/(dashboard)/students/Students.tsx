@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Student } from "@/types/database"
-import { getStudentsByClassId, createStudent, deleteStudent } from "@/lib/database/students"
+import { loadStudents, addStudent, removeStudent } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, User, UserPlus } from "lucide-react"
@@ -19,18 +19,18 @@ export default function Students({ classId }: StudentsProps) {
   const [error, setError] = useState("")
   const numberInputRef = useRef<HTMLInputElement>(null)
 
-  const loadStudents = async () => {
+  const fetchStudents = async () => {
     if (!classId) return
 
     setIsLoading(true)
-    const data = await getStudentsByClassId(classId)
+    const data = await loadStudents(classId)
     setStudents(data)
     setIsLoading(false)
   }
 
   useEffect(() => {
     if (classId) {
-      loadStudents()
+      fetchStudents()
     }
   }, [classId])
 
@@ -56,7 +56,7 @@ export default function Students({ classId }: StudentsProps) {
     setIsLoading(true)
     setError("")
 
-    const result = await createStudent({
+    const result = await addStudent({
       class_id: classId,
       number: number,
       name: name,
@@ -67,9 +67,6 @@ export default function Students({ classId }: StudentsProps) {
       setStudents([...students, result.student].sort((a, b) => a.number - b.number))
       setStudentNumber("")
       setStudentName("")
-      setTimeout(() => {
-        numberInputRef.current?.focus()
-      }, 0)
     } else {
       setError(result.error || "학생 추가에 실패했습니다.")
     }
@@ -79,7 +76,7 @@ export default function Students({ classId }: StudentsProps) {
 
   const handleDeleteStudent = async (studentId: string) => {
     setIsLoading(true)
-    const success = await deleteStudent(studentId)
+    const success = await removeStudent(studentId)
 
     if (success) {
       setStudents(students.filter((student) => student.id !== studentId))
@@ -92,6 +89,7 @@ export default function Students({ classId }: StudentsProps) {
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
+      numberInputRef.current?.focus()
       handleAddStudent()
     }
   }
@@ -113,7 +111,6 @@ export default function Students({ classId }: StudentsProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">학생 관리</h1>
-        <p className="text-muted-foreground mt-2">학생을 추가하고 관리하세요.</p>
       </div>
 
       <Card>
