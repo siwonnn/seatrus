@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, User, UserPlus } from "lucide-react"
 
-interface StudentManagementProps {
+interface StudentsProps {
   classId: string | null
 }
 
-export default function StudentManagement({ classId }: StudentManagementProps) {
+export default function Students({ classId }: StudentsProps) {
   const [students, setStudents] = useState<Student[]>([])
   const [studentNumber, setStudentNumber] = useState("")
   const [studentName, setStudentName] = useState("")
@@ -21,12 +21,18 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
 
   const loadStudents = async () => {
     if (!classId) return
-    
+
     setIsLoading(true)
     const data = await getStudentsByClassId(classId)
     setStudents(data)
     setIsLoading(false)
   }
+
+  useEffect(() => {
+    if (classId) {
+      loadStudents()
+    }
+  }, [classId])
 
   const handleAddStudent = async () => {
     if (!classId) {
@@ -61,6 +67,9 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
       setStudents([...students, result.student].sort((a, b) => a.number - b.number))
       setStudentNumber("")
       setStudentName("")
+      setTimeout(() => {
+        numberInputRef.current?.focus()
+      }, 0)
     } else {
       setError(result.error || "학생 추가에 실패했습니다.")
     }
@@ -71,20 +80,19 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
   const handleDeleteStudent = async (studentId: string) => {
     setIsLoading(true)
     const success = await deleteStudent(studentId)
-    
+
     if (success) {
-      setStudents(students.filter(s => s.id !== studentId))
+      setStudents(students.filter((student) => student.id !== studentId))
     } else {
       setError("학생 삭제에 실패했습니다.")
     }
-    
+
     setIsLoading(false)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
       handleAddStudent()
-      numberInputRef.current?.focus()
     }
   }
 
@@ -108,7 +116,6 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
         <p className="text-muted-foreground mt-2">학생을 추가하고 관리하세요.</p>
       </div>
 
-      {/* Add Student Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -125,7 +132,7 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
                 min="1"
                 placeholder="번호"
                 value={studentNumber}
-                onChange={(e) => setStudentNumber(e.target.value)}
+                onChange={(event) => setStudentNumber(event.target.value)}
                 onKeyDown={handleKeyPress}
                 className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
                 disabled={isLoading}
@@ -136,7 +143,7 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
                 type="text"
                 placeholder="이름"
                 value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
+                onChange={(event) => setStudentName(event.target.value)}
                 onKeyDown={handleKeyPress}
                 className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
                 disabled={isLoading}
@@ -150,13 +157,10 @@ export default function StudentManagement({ classId }: StudentManagementProps) {
               추가
             </Button>
           </div>
-          {error && (
-            <p className="mt-2 text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         </CardContent>
       </Card>
 
-      {/* Students List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

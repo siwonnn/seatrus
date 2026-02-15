@@ -22,6 +22,25 @@ export async function getOrganizationByName(
   return data as Organization
 }
 
+// Get organization by id
+export async function getOrganizationById(
+  id: string
+): Promise<Organization | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (error) {
+    return null
+  }
+
+  return data as Organization
+}
+
 // Create a new organization
 export async function createOrganization(
   name: string

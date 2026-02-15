@@ -1,16 +1,17 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutGrid, Users, Settings, History, CirclePlus, LogOut, ChevronRight } from "lucide-react"
 import { signOut } from "next-auth/react"
 
-type TabId = "create-seats" | "student-management" | "seat-settings" | "history" | "settings"
-
 interface Tab {
-  id: TabId
+  id: string
   label: string
   icon: React.ReactNode
+  href: string
 }
 
 interface SidebarProps {
@@ -19,8 +20,6 @@ interface SidebarProps {
     name: string | null
     email: string | null
   }
-  activeTab: TabId
-  onTabChange: (tab: TabId) => void
   organizationName: string | null
   classData: {
     grade: number
@@ -29,15 +28,16 @@ interface SidebarProps {
 }
 
 const tabs: Tab[] = [
-  { id: "create-seats", label: "자리 배치 생성", icon: <CirclePlus className="w-5 h-5" /> },
-  { id: "student-management", label: "학생 관리", icon: <Users className="w-5 h-5" /> },
-  { id: "seat-settings", label: "배치 설정", icon: <LayoutGrid className="w-5 h-5" /> },
-  { id: "history", label: "히스토리", icon: <History className="w-5 h-5" /> },
+  { id: "create-seats", label: "자리 배치 생성", icon: <CirclePlus className="w-5 h-5" />, href: "/create-seats" },
+  { id: "students", label: "학생 관리", icon: <Users className="w-5 h-5" />, href: "/students" },
+  { id: "seat-settings", label: "배치 설정", icon: <LayoutGrid className="w-5 h-5" />, href: "/seat-settings" },
+  { id: "history", label: "히스토리", icon: <History className="w-5 h-5" />, href: "/history" },
 ]
 
-export default function Sidebar({ user, activeTab, onTabChange, organizationName, classData }: SidebarProps) {
+export default function Sidebar({ user, organizationName, classData }: SidebarProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -77,21 +77,24 @@ export default function Sidebar({ user, activeTab, onTabChange, organizationName
 
       {/* Navigation Tabs */}
       <nav className="flex-1 p-4 space-y-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-              activeTab === tab.id
-                ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg hover:brightness-95"
-                : "text-sidebar-foreground hover:bg-sidebar-accent"
-            )}
-          >
-            {tab.icon}
-            <span className="font-medium">{tab.label}</span>
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const isActive = pathname === tab.href
+          return (
+            <Link
+              key={tab.id}
+              href={tab.href}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                isActive
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg hover:brightness-95"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+              )}
+            >
+              {tab.icon}
+              <span className="font-medium">{tab.label}</span>
+            </Link>
+          )
+        })}
       </nav>
 
       {/* User Section */}
@@ -115,16 +118,14 @@ export default function Sidebar({ user, activeTab, onTabChange, organizationName
         {/* User Menu Dropdown */}
         {isUserMenuOpen && (
           <div className="absolute bottom-full left-4 right-4 mb-2 bg-card border border-border rounded-lg shadow-lg z-50">
-            <button
-              onClick={() => {
-                onTabChange("settings")
-                setIsUserMenuOpen(false)
-              }}
+            <Link
+              href="/settings"
+              onClick={() => setIsUserMenuOpen(false)}
               className="w-full flex items-center gap-3 px-4 py-3 text-card-foreground hover:bg-accent transition-colors first:rounded-t-lg"
             >
               <Settings className="w-4 h-4" />
               <span className="text-sm font-medium">설정</span>
-            </button>
+            </Link>
             <div className="border-t border-border" />
             <button
               onClick={() => signOut({ redirect: true, callbackUrl: "/login" })}
