@@ -1,38 +1,26 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 import { Student } from "@/types/database"
-import { loadStudents, addStudent, removeStudent } from "./actions"
+import { addStudent, removeStudent } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, User, UserPlus } from "lucide-react"
 
 interface StudentsProps {
   classId: string | null
+  initialStudents: Student[]
 }
 
-export default function Students({ classId }: StudentsProps) {
-  const [students, setStudents] = useState<Student[]>([])
+export default function Students({ classId, initialStudents }: StudentsProps) {
+  const [students, setStudents] = useState<Student[]>(initialStudents)
   const [studentNumber, setStudentNumber] = useState("")
   const [studentName, setStudentName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const numberInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchStudents = async () => {
-    if (!classId) return
 
-    setIsLoading(true)
-    const data = await loadStudents(classId)
-    setStudents(data)
-    setIsLoading(false)
-  }
-
-  useEffect(() => {
-    if (classId) {
-      fetchStudents()
-    }
-  }, [classId])
 
   const handleAddStudent = async () => {
     if (!classId) {
