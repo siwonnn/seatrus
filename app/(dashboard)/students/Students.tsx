@@ -30,8 +30,13 @@ export default function Students({ classId, initialStudents }: StudentsProps) {
     const number = parseInt(studentNumber)
     const name = studentName.trim()
     
-    if (!studentNumber || isNaN(number) || number <= 0) {
+    if (!studentNumber || isNaN(number)) {
       setError("번호를 올바르게 입력해주세요.")
+      return
+    }
+
+    if (number < 1|| number > 100) {
+      setError("번호는 1과 100 사이여야 합니다.")
       return
     }
     
