@@ -58,3 +58,25 @@ export async function getClassesByOrganizationId(
 
   return data as Class[]
 }
+
+export async function updateClassSeatStructure(
+  classId: string,
+  rows: number,
+  columns: number
+): Promise<Class | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("classes")
+    .update({ rows, columns })
+    .eq("id", classId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error updating class seat structure:", error)
+    return null
+  }
+
+  return data as Class
+}
