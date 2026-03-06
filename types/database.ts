@@ -23,6 +23,7 @@ export interface Class {
   class_name: string
   rows: number
   columns: number
+  prevent_same_seat: boolean
   prevent_same_pair: boolean
   prevent_back_to_back: boolean
 }

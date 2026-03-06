@@ -80,3 +80,28 @@ export async function updateClassSeatStructure(
 
   return data as Class
 }
+
+export async function updateClassRules(
+  classId: string,
+  rules: {
+    prevent_same_seat?: boolean
+    prevent_same_pair?: boolean
+    prevent_back_to_back?: boolean
+  }
+): Promise<Class | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("classes")
+    .update(rules)
+    .eq("id", classId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error updating class rules:", error)
+    return null
+  }
+
+  return data as Class
+}

@@ -3,13 +3,17 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 import { Check, Minus, Plus, X } from "lucide-react"
-import { saveSeatStructure, toggleSeatEnabled } from "./actions"
+import { saveClassRules, saveSeatStructure, toggleSeatEnabled } from "./actions"
 
 interface SeatSettingsProps {
   classId: string | null
   initialRows: number
   initialColumns: number
+  initialPreventSameSeat: boolean
+  initialPreventSamePair: boolean
+  initialPreventBackToBack: boolean
   studentCount: number
   initialDisabledSeats: Array<{ row: number; column: number }>
 }
@@ -18,6 +22,9 @@ export default function SeatSettings({
   classId,
   initialRows,
   initialColumns,
+  initialPreventSameSeat,
+  initialPreventSamePair,
+  initialPreventBackToBack,
   studentCount,
   initialDisabledSeats,
 }: SeatSettingsProps) {
@@ -33,6 +40,9 @@ export default function SeatSettings({
   )
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [preventSameSeat, setPreventSameSeat] = useState(initialPreventSameSeat)
+  const [preventSamePair, setPreventSamePair] = useState(initialPreventSamePair)
+  const [preventBackToBack, setPreventBackToBack] = useState(initialPreventBackToBack)
 
   const enabledSeatCount = enabledSeats.filter(Boolean).length
   const isSeatCountMatched = enabledSeatCount === studentCount
@@ -104,6 +114,35 @@ export default function SeatSettings({
       )
     } else {
       setError(result.error || "자리 구조 저장에 실패했습니다.")
+    }
+
+    setIsLoading(false)
+  }
+
+  const handleToggleRule = async (
+    key: "prevent_same_seat" | "prevent_same_pair" | "prevent_back_to_back"
+  ) => {
+    if (isLoading || !classId) {
+      return
+    }
+
+    const nextRules = {
+      prevent_same_seat: key === "prevent_same_seat" ? !preventSameSeat : preventSameSeat,
+      prevent_same_pair: key === "prevent_same_pair" ? !preventSamePair : preventSamePair,
+      prevent_back_to_back: key === "prevent_back_to_back" ? !preventBackToBack : preventBackToBack,
+    }
+
+    setIsLoading(true)
+    setError("")
+
+    const result = await saveClassRules(classId, nextRules)
+
+    if (result.success) {
+      setPreventSameSeat(result.prevent_same_seat)
+      setPreventSamePair(result.prevent_same_pair)
+      setPreventBackToBack(result.prevent_back_to_back)
+    } else {
+      setError(result.error || "규칙 저장에 실패했습니다.")
     }
 
     setIsLoading(false)
@@ -216,6 +255,55 @@ export default function SeatSettings({
               >
                 <Minus className="w-4 h-4" />
               </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>규칙 설정</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-foreground">같은 자리 방지</p>
+                <p className="text-sm text-muted-foreground">이전 배치와 같은 자리에 같은 학생이 다시 배정되는 것을 막습니다.</p>
+              </div>
+              <Switch
+                checked={preventSameSeat}
+                onCheckedChange={() => handleToggleRule("prevent_same_seat")}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-foreground">같은 짝 방지</p>
+                <p className="text-sm text-muted-foreground">이전 배치에서 짝이었던 학생들이 다시 짝이 되지 않도록 합니다.</p>
+              </div>
+              <Switch
+                checked={preventSamePair}
+                onCheckedChange={() => handleToggleRule("prevent_same_pair")}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-foreground">연속 맨 뒷자리 방지</p>
+                <p className="text-sm text-muted-foreground">특정 학생이 연속으로 맨 뒷자리에 배정되지 않도록 합니다.</p>
+              </div>
+              <Switch
+                checked={preventBackToBack}
+                onCheckedChange={() => handleToggleRule("prevent_back_to_back")}
+                disabled={isLoading}
+              />
             </div>
           </div>
         </CardContent>

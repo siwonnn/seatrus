@@ -23,6 +23,9 @@ export default async function SeatSettingsPage() {
       classId={classData?.id || null}
       initialRows={Math.max(1, classData?.rows || 1)}
       initialColumns={Math.max(1, classData?.columns || 1)}
+      initialPreventSameSeat={classData?.prevent_same_seat ?? false}
+      initialPreventSamePair={classData?.prevent_same_pair ?? false}
+      initialPreventBackToBack={classData?.prevent_back_to_back ?? false}
       studentCount={studentCount}
       initialDisabledSeats={initialDisabledSeats}
     />
