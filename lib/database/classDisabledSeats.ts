@@ -74,3 +74,35 @@ export async function removeDisabledSeat(classId: string, row: number, column: n
 
   return true
 }
+
+export async function replaceDisabledSeats(
+  classId: string,
+  seats: Array<{ row: number; column: number }>
+): Promise<boolean> {
+  const supabase = await createClient()
+
+  const { error: deleteError } = await supabase
+    .from("class_disabled_seats")
+    .delete()
+    .eq("class_id", classId)
+
+  if (deleteError) {
+    console.error("Error clearing disabled seats:", deleteError)
+    return false
+  }
+
+  if (seats.length === 0) {
+    return true
+  }
+
+  const { error: insertError } = await supabase
+    .from("class_disabled_seats")
+    .insert(seats.map((seat) => ({ class_id: classId, row: seat.row, column: seat.column })))
+
+  if (insertError) {
+    console.error("Error inserting disabled seats:", insertError)
+    return false
+  }
+
+  return true
+}

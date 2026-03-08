@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Check, Minus, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { saveSeatStructure, toggleSeatEnabled } from "@/app/main/actions/structure"
 
 interface StructureSettingsProps {
   classId: string | null
@@ -36,9 +35,6 @@ export default function StructureSettings({
       return !disabledSeatKeySet.has(`${row}-${column}`)
     })
   )
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-
   const enabledSeatCount = enabledSeats.filter(Boolean).length
   const isSeatCountMatched = enabledSeatCount === studentCount
 
@@ -88,30 +84,14 @@ export default function StructureSettings({
     })
   }
 
-  const updateStructure = async (nextRows: number, nextColumns: number) => {
-    if (!classId) {
-      setError("학급 정보가 없습니다.")
-      return
-    }
-
+  const updateStructure = (nextRows: number, nextColumns: number) => {
     if (nextRows < 1 || nextColumns < 1) {
       return
     }
 
-    setIsLoading(true)
-    setError("")
-
-    const result = await saveSeatStructure(classId, nextRows, nextColumns)
-
-    if (result.success) {
-      setRows(result.rows)
-      setColumns(result.columns)
-      resizeEnabledSeats(result.rows, result.columns)
-    } else {
-      setError(result.error || "자리 구조 저장에 실패했습니다.")
-    }
-
-    setIsLoading(false)
+    setRows(nextRows)
+    setColumns(nextColumns)
+    resizeEnabledSeats(nextRows, nextColumns)
   }
 
   const handleAddRow = () => updateStructure(rows + 1, columns)
@@ -119,38 +99,25 @@ export default function StructureSettings({
   const handleAddColumn = () => updateStructure(rows, columns + 1)
   const handleRemoveColumn = () => updateStructure(rows, columns - 1)
 
-  const handleToggleSeat = async (seatIndex: number) => {
-    if (isLoading || !classId) {
+  const handleToggleSeat = (seatIndex: number) => {
+    if (!classId) {
       return
     }
 
-    const row = Math.floor(seatIndex / columns) + 1
-    const column = (seatIndex % columns) + 1
     const currentEnabled = enabledSeats[seatIndex] ?? true
     const nextEnabled = !currentEnabled
 
-    setIsLoading(true)
-    setError("")
-
-    const result = await toggleSeatEnabled(classId, row, column, nextEnabled)
-
-    if (result.success) {
-      setEnabledSeats((previous) => {
-        const nextSeatStates = previous.map((isEnabled, index) =>
-          index === seatIndex ? nextEnabled : isEnabled
-        )
-        onStructureChange?.({
-          rows,
-          columns,
-          disabledSeats: toDisabledSeats(nextSeatStates, columns),
-        })
-        return nextSeatStates
+    setEnabledSeats((previous) => {
+      const nextSeatStates = previous.map((isEnabled, index) =>
+        index === seatIndex ? nextEnabled : isEnabled
+      )
+      onStructureChange?.({
+        rows,
+        columns,
+        disabledSeats: toDisabledSeats(nextSeatStates, columns),
       })
-    } else {
-      setError(result.error || "자리 구조 저장에 실패했습니다.")
-    }
-
-    setIsLoading(false)
+      return nextSeatStates
+    })
   }
 
   if (!classId) {
@@ -168,7 +135,6 @@ export default function StructureSettings({
         {!isSeatCountMatched && (
           <p className="text-sm text-destructive">활성 자리 수를 학생 수와 같게 맞춰주세요.</p>
         )}
-        {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
 
       <div className="inline-flex items-start gap-2">
@@ -185,7 +151,6 @@ export default function StructureSettings({
                   type="button"
                   key={index}
                   onClick={() => handleToggleSeat(index)}
-                  disabled={isLoading}
                   aria-pressed={isEnabled}
                   className={
                     isEnabled
@@ -205,7 +170,6 @@ export default function StructureSettings({
               size="icon"
               variant="outline"
               onClick={handleAddRow}
-              disabled={isLoading}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -214,7 +178,7 @@ export default function StructureSettings({
               size="icon"
               variant="outline"
               onClick={handleRemoveRow}
-              disabled={isLoading || rows <= 1}
+              disabled={rows <= 1}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -232,7 +196,6 @@ export default function StructureSettings({
             size="icon"
             variant="outline"
             onClick={handleAddColumn}
-            disabled={isLoading}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -241,7 +204,7 @@ export default function StructureSettings({
             size="icon"
             variant="outline"
             onClick={handleRemoveColumn}
-            disabled={isLoading || columns <= 1}
+            disabled={columns <= 1}
           >
             <Minus className="h-4 w-4" />
           </Button>

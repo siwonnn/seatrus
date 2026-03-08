@@ -23,6 +23,7 @@ import Students from "./components/Students"
 import { Student } from "@/types/database"
 import { CircleHelp, LayoutGrid, User } from "lucide-react"
 import { randomizeSeatsForClass } from "./actions/randomize-seats"
+import { saveStructureDraft } from "./actions/structure"
 import { formatSeoulDateLong, formatSeoulRelativeDay } from "@/lib/date"
 
 interface MainProps {
@@ -63,14 +64,25 @@ export default function Main({
     columns: initialColumns,
     disabledSeats: initialDisabledSeats,
   })
+  const [persistedStructure, setPersistedStructure] = useState<{
+    rows: number
+    columns: number
+    disabledSeats: Array<{ row: number; column: number }>
+  }>({
+    rows: initialRows,
+    columns: initialColumns,
+    disabledSeats: initialDisabledSeats,
+  })
   const [studentDialogOpen, setStudentDialogOpen] = useState(false)
   const [structureDialogOpen, setStructureDialogOpen] = useState(false)
+  const [isSavingStructure, setIsSavingStructure] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [runningMode, setRunningMode] = useState<"official" | "demo" | null>(null)
   const [runError, setRunError] = useState("")
   const [latestLayoutCreatedAt, setLatestLayoutCreatedAt] = useState<string | null>(
     initialLatestLayoutCreatedAt
   )
+  const [structureSaveError, setStructureSaveError] = useState("")
   const currentStudentCount = students.length
   const enabledSeatCount = Math.max(0, structure.rows * structure.columns - structure.disabledSeats.length)
   const isSeatCountMatched = enabledSeatCount === currentStudentCount
@@ -104,8 +116,86 @@ export default function Main({
     alerts.push({
       id: "seat-mismatch",
       tone: "warning",
-      message: `활성 자리 수(${enabledSeatCount})와 학생 수(${currentStudentCount})가 다릅니다.`,
+      message: `활성 자리 수(${enabledSeatCount})와 학생 수(${currentStudentCount})가 다릅니다. 자리 구조 설정에서 활성 자리 수를 조정해주세요.`,
     })
+  }
+  if (structureSaveError) {
+    alerts.push({
+      id: "structure-save-failed",
+      tone: "warning",
+      message: structureSaveError,
+    })
+  }
+
+  const normalizeDisabledSeats = (seats: Array<{ row: number; column: number }>) => {
+    return [...seats].sort((a, b) => (a.row === b.row ? a.column - b.column : a.row - b.row))
+  }
+
+  const areStructuresEqual = (
+    previous: { rows: number; columns: number; disabledSeats: Array<{ row: number; column: number }> },
+    next: { rows: number; columns: number; disabledSeats: Array<{ row: number; column: number }> }
+  ) => {
+    if (previous.rows !== next.rows || previous.columns !== next.columns) {
+      return false
+    }
+
+    const previousSeats = normalizeDisabledSeats(previous.disabledSeats)
+    const nextSeats = normalizeDisabledSeats(next.disabledSeats)
+
+    if (previousSeats.length !== nextSeats.length) {
+      return false
+    }
+
+    return previousSeats.every(
+      (seat, index) => seat.row === nextSeats[index].row && seat.column === nextSeats[index].column
+    )
+  }
+
+  const handleStructureDialogOpenChange = async (nextOpen: boolean) => {
+    if (isSavingStructure) {
+      return
+    }
+
+    if (nextOpen) {
+      setStructureSaveError("")
+      setStructureDialogOpen(true)
+      return
+    }
+
+    if (!classId) {
+      setStructureDialogOpen(false)
+      return
+    }
+
+    if (areStructuresEqual(persistedStructure, structure)) {
+      setStructureDialogOpen(false)
+      return
+    }
+
+    setIsSavingStructure(true)
+    setStructureSaveError("")
+
+    const result = await saveStructureDraft(
+      classId,
+      structure.rows,
+      structure.columns,
+      structure.disabledSeats
+    )
+
+    if (!result.success) {
+      setStructureSaveError(result.error)
+      setIsSavingStructure(false)
+      return
+    }
+
+    setPersistedStructure({
+      rows: result.rows,
+      columns: result.columns,
+      disabledSeats: structure.disabledSeats,
+    })
+
+    setIsSavingStructure(false)
+    setStructureDialogOpen(false)
   }
 
   const handleRunSeatRandomization = async (mode: "official" | "demo") => {
@@ -277,11 +367,13 @@ export default function Main({
               <div>
                 <CardTitle>자리 구조</CardTitle>
               </div>
-              <Dialog open={structureDialogOpen} onOpenChange={setStructureDialogOpen}>
+              <Dialog open={structureDialogOpen} onOpenChange={handleStructureDialogOpenChange}>
                 <DialogTrigger asChild>
-                  <Button type="button" variant="outline" size="sm">자리 구조 설정</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={isSavingStructure}>
+                    {isSavingStructure ? "저장 중..." : "자리 구조 설정"}
+                  </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto" showCloseButton>
+                <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto" showCloseButton={!isSavingStructure}>
                   <DialogHeader>
                     <DialogTitle className="flex gap-2">
                       <LayoutGrid className="h-5 w-5" />
