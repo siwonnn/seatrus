@@ -46,12 +46,14 @@ export default async function HistoryDetailPage({ params }: HistoryDetailPagePro
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="outline" size="icon" aria-label="히스토리 목록으로 이동">
-            <Link href="/history">
+            <Link href={layout.is_demo ? "/main" : "/history"}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">배치 결과</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              {layout.is_demo ? "시범 배치 결과" : "배치 결과"}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {formatSeoulDateTime(layout.created_at)} 생성
             </p>

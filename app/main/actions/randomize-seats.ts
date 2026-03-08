@@ -15,6 +15,10 @@ type RandomizeSeatsResult =
   | { success: true; layoutId: string }
   | { success: false; error: string }
 
+interface RandomizeSeatsOptions {
+  isDemo?: boolean
+}
+
 function toKey(row: number, column: number) {
   return `${row}-${column}`
 }
@@ -119,7 +123,12 @@ function validateAgainstLatestLayout(
   return true
 }
 
-export async function randomizeSeatsForClass(classId: string): Promise<RandomizeSeatsResult> {
+export async function randomizeSeatsForClass(
+  classId: string,
+  options?: RandomizeSeatsOptions
+): Promise<RandomizeSeatsResult> {
+  const isDemo = options?.isDemo ?? false
+
   if (!classId) {
     return { success: false, error: "학급 정보가 없습니다." }
   }
@@ -146,7 +155,7 @@ export async function randomizeSeatsForClass(classId: string): Promise<Randomize
     }
   }
 
-  const latestLayout = await getLatestSeatLayoutByClassId(classId)
+  const latestLayout = await getLatestSeatLayoutByClassId(classId, { includeDemo: false })
 
   const shouldApplyRules = Boolean(latestLayout)
   const latestSeats = latestLayout ? await getSeatsByLayoutId(latestLayout.id) : []
@@ -243,6 +252,7 @@ export async function randomizeSeatsForClass(classId: string): Promise<Randomize
     organization_id: classData.organization_id,
     rows: classData.rows,
     columns: classData.columns,
+    is_demo: isDemo,
   })
 
   if (!layout) {

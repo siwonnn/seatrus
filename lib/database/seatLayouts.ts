@@ -39,14 +39,22 @@ export async function deleteSeatLayout(layoutId: string): Promise<boolean> {
 }
 
 export async function getLatestSeatLayoutByClassId(
-  classId: string
+  classId: string,
+  options?: { includeDemo?: boolean }
 ): Promise<SeatLayout | null> {
   const supabase = await createClient()
+  const includeDemo = options?.includeDemo ?? true
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("seat_layouts")
     .select("*")
     .eq("class_id", classId)
+
+  if (!includeDemo) {
+    query = query.eq("is_demo", false)
+  }
+
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -69,6 +77,7 @@ export async function getSeatLayoutsByClassId(
     .from("seat_layouts")
     .select("*")
     .eq("class_id", classId)
+    .eq("is_demo", false)
     .order("created_at", { ascending: false })
     .limit(limit)
 

@@ -44,6 +44,7 @@ export interface SeatLayout {
   class_id: string
   rows: number
   columns: number
+  is_demo: boolean
 }
 
 export interface Seat {

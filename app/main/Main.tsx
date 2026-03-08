@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -15,7 +21,7 @@ import RuleSettings from "./components/RuleSettings"
 import StructureSettings from "./components/StructureSettings"
 import Students from "./components/Students"
 import { Student } from "@/types/database"
-import { LayoutGrid, User } from "lucide-react"
+import { CircleHelp, LayoutGrid, User } from "lucide-react"
 import { randomizeSeatsForClass } from "./actions/randomize-seats"
 import { formatSeoulDateLong, formatSeoulRelativeDay } from "@/lib/date"
 
@@ -60,6 +66,7 @@ export default function Main({
   const [studentDialogOpen, setStudentDialogOpen] = useState(false)
   const [structureDialogOpen, setStructureDialogOpen] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [runningMode, setRunningMode] = useState<"official" | "demo" | null>(null)
   const [runError, setRunError] = useState("")
   const [latestLayoutCreatedAt, setLatestLayoutCreatedAt] = useState<string | null>(
     initialLatestLayoutCreatedAt
@@ -101,7 +108,7 @@ export default function Main({
     })
   }
 
-  const handleRunSeatRandomization = async () => {
+  const handleRunSeatRandomization = async (mode: "official" | "demo") => {
     if (!classId || isRunning) {
       return
     }
@@ -112,23 +119,30 @@ export default function Main({
     }
 
     setIsRunning(true)
+    setRunningMode(mode)
     setRunError("")
 
     try {
-      const result = await randomizeSeatsForClass(classId)
+      const result = await randomizeSeatsForClass(classId, {
+        isDemo: mode === "demo",
+      })
 
       if (!result.success) {
         setRunError(result.error)
         setIsRunning(false)
+        setRunningMode(null)
         return
       }
 
-      setLatestLayoutCreatedAt(new Date().toISOString())
+      if (mode === "official") {
+        setLatestLayoutCreatedAt(new Date().toISOString())
+      }
       router.push(`/history/${result.layoutId}`)
     } catch (error) {
       console.error("Error running seat randomization:", error)
       setRunError("자리 배치 실행 중 오류가 발생했습니다. 다시 시도해주세요.")
       setIsRunning(false)
+      setRunningMode(null)
     }
   }
 
@@ -167,20 +181,63 @@ export default function Main({
               </div>
             ))}
           </div>
-          <Button
-            type="button"
-            size="lg"
-            className="text-lg font-semibold"
-            onClick={handleRunSeatRandomization}
-            disabled={
-              isRunning ||
-              !classId ||
-              !isSeatCountMatched ||
-              currentStudentCount === 0
-            }
-          >
-            {isRunning ? "배치 실행 중..." : "자리 새로 배치하기"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="lg"
+              className="text-lg font-semibold"
+              onClick={() => handleRunSeatRandomization("official")}
+              disabled={
+                isRunning ||
+                !classId ||
+                !isSeatCountMatched ||
+                currentStudentCount === 0
+              }
+            >
+              {isRunning && runningMode === "official" ? "배치 실행 중..." : "자리 새로 배치하기"}
+            </Button>
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              className="text-md"
+              onClick={() => handleRunSeatRandomization("demo")}
+              disabled={
+                isRunning ||
+                !classId ||
+                !isSeatCountMatched ||
+                currentStudentCount === 0
+              }
+            >
+              {isRunning && runningMode === "demo" ? (
+                "시범 배치 중..."
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  시범 배치
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          role="button"
+                          aria-label="시범 배치 안내"
+                          className="inline-flex h-3 w-3 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                          }}
+                        >
+                          <CircleHelp className="h-2.5 w-2.5" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={6}>
+                        시범 배치는 자리 배치 기록이 히스토리에 남지 않습니다.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </span>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

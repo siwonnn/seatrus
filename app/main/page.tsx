@@ -19,7 +19,7 @@ export default async function MainPage() {
     const [students, disabledSeats, latestLayout] = await Promise.all([
       getStudentsByClassId(classData.id),
       getDisabledSeatsByClassId(classData.id),
-      getLatestSeatLayoutByClassId(classData.id),
+      getLatestSeatLayoutByClassId(classData.id, { includeDemo: false }),
     ])
     initialStudents = students
     initialDisabledSeats = disabledSeats.map((seat) => ({ row: seat.row, column: seat.column }))
