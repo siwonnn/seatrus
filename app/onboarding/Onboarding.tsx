@@ -58,19 +58,13 @@ export default function Onboarding() {
 		<div className="min-h-screen bg-linear-to-br from-background via-secondary/30 to-accent/20 px-6 py-12">
 			<div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
 				<div className="text-center">
-					<div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-accent text-xl shadow-sm">
-						🍊
-					</div>
-					<h1 className="text-3xl font-bold text-foreground">학교 정보 설정</h1>
-					<p className="mt-2 text-sm text-muted-foreground">
-						학교, 학년, 반 정보를 입력해 맞춤 환경을 설정하세요.
-					</p>
+					<h1 className="text-3xl font-bold text-foreground">시작하기</h1>
 				</div>
 
 				<Card className="border-border/60 bg-card/90 shadow-lg backdrop-blur">
 					<CardHeader>
 						<CardTitle>기본 정보</CardTitle>
-						<CardDescription>필수 항목을 모두 입력해 주세요.</CardDescription>
+						<CardDescription>학교, 학년, 반을 입력해 주세요.</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<form className="space-y-6" onSubmit={handleSubmit}>

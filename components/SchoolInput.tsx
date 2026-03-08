@@ -14,6 +14,37 @@ interface SchoolInputProps {
   onChange: (value: string) => void
 }
 
+const PRIORITY_SCHOOL_NAME = "용인한국외국어대학교부설고등학교"
+const TARGET_QUERY_SET = new Set(["외대", "외대부", "외대부고"])
+
+function normalizeKoreanText(text: string) {
+  return text.replace(/\s+/g, "").trim().toLowerCase()
+}
+
+async function searchSchoolsByName(schoolName: string): Promise<SchoolResult[]> {
+  const params = new URLSearchParams({
+    KEY: process.env.NEIS_API_KEY || "",
+    Type: "json",
+    pIndex: "1",
+    pSize: "20",
+    SCHUL_NM: schoolName,
+  })
+
+  const response = await fetch(`https://open.neis.go.kr/hub/schoolInfo?${params.toString()}`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch schools")
+  }
+
+  const data = await response.json()
+
+  if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
+    return data.schoolInfo[1].row as SchoolResult[]
+  }
+
+  return []
+}
+
 export default function SchoolInput({ value, onChange }: SchoolInputProps) {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SchoolResult[]>([])
@@ -23,34 +54,35 @@ export default function SchoolInput({ value, onChange }: SchoolInputProps) {
   const handleSearch = async () => {
     if (!query.trim()) return
 
+    const trimmedQuery = query.trim()
+
     setIsSearching(true)
     setError("")
     setResults([])
 
     try {
-      const params = new URLSearchParams({
-        KEY: process.env.NEIS_API_KEY || "",
-        Type: "json",
-        pIndex: "1",
-        pSize: "20",
-        SCHUL_NM: query.trim(),
-      })
+      let mergedResults = await searchSchoolsByName(trimmedQuery)
 
-      const response = await fetch(
-        `https://open.neis.go.kr/hub/schoolInfo?${params.toString()}`
-      )
+      if (TARGET_QUERY_SET.has(normalizeKoreanText(trimmedQuery))) {
+        const internalResults = await searchSchoolsByName(PRIORITY_SCHOOL_NAME)
+        const targetSchool = internalResults.find(
+          (school) => normalizeKoreanText(school.SCHUL_NM) === normalizeKoreanText(PRIORITY_SCHOOL_NAME)
+        )
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch schools")
+        if (targetSchool) {
+          mergedResults = [
+            targetSchool,
+            ...mergedResults.filter(
+              (school) =>
+                normalizeKoreanText(school.SCHUL_NM) !== normalizeKoreanText(PRIORITY_SCHOOL_NAME)
+            ),
+          ]
+        }
       }
 
-      const data = await response.json()
-
-      // Parse the response according to the API structure
-      if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
-        setResults(data.schoolInfo[1].row)
+      if (mergedResults.length > 0) {
+        setResults(mergedResults)
       } else {
-        setResults([])
         setError("검색 결과가 없습니다.")
       }
     } catch (err) {

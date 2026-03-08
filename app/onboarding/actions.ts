@@ -40,11 +40,11 @@ export async function submitOnboarding(data: OnboardingData) {
       user_id: session.user.id,
       grade: data.grade,
       class_name: data.className,
-      rows: 5,
-      columns: 6,
-      prevent_same_seat: false,
-      prevent_same_pair: false,
-      prevent_back_to_back: false,
+      rows: 4,
+      columns: 8,
+      prevent_same_seat: true,
+      prevent_same_pair: true,
+      prevent_back_to_back: true,
     })
 
     if (!newClass) {
