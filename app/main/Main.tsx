@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -15,10 +16,11 @@ import StructureSettings from "./components/StructureSettings"
 import Students from "./components/Students"
 import { Student } from "@/types/database"
 import { LayoutGrid, User } from "lucide-react"
+import { randomizeSeatsForClass } from "./actions/randomize-seats"
+import { formatSeoulDateLong, formatSeoulRelativeDay } from "@/lib/date"
 
 interface MainProps {
   classId: string | null
-  studentCount: number
   initialRows: number
   initialColumns: number
   initialPreventSameSeat: boolean
@@ -26,11 +28,13 @@ interface MainProps {
   initialPreventBackToBack: boolean
   initialStudents: Student[]
   initialDisabledSeats: Array<{ row: number; column: number }>
+  initialLatestLayoutCreatedAt: string | null
+  classGrade: number | null
+  className: string | null
 }
 
 export default function Main({
   classId,
-  studentCount,
   initialRows,
   initialColumns,
   initialPreventSameSeat,
@@ -38,7 +42,11 @@ export default function Main({
   initialPreventBackToBack,
   initialStudents,
   initialDisabledSeats,
+  initialLatestLayoutCreatedAt,
+  classGrade,
+  className,
 }: MainProps) {
+  const router = useRouter()
   const [students, setStudents] = useState<Student[]>(initialStudents)
   const [structure, setStructure] = useState<{
     rows: number
@@ -51,11 +59,26 @@ export default function Main({
   })
   const [studentDialogOpen, setStudentDialogOpen] = useState(false)
   const [structureDialogOpen, setStructureDialogOpen] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
+  const [runError, setRunError] = useState("")
+  const [latestLayoutCreatedAt, setLatestLayoutCreatedAt] = useState<string | null>(
+    initialLatestLayoutCreatedAt
+  )
   const currentStudentCount = students.length
   const enabledSeatCount = Math.max(0, structure.rows * structure.columns - structure.disabledSeats.length)
   const isSeatCountMatched = enabledSeatCount === currentStudentCount
+  const mainTitle = classGrade && className
+    ? `${classGrade}학년 ${className}반 자리 배치`
+    : "자리 배치"
 
   const alerts: Array<{ id: string; tone: "warning" | "info"; message: string }> = []
+  if (runError) {
+    alerts.push({
+      id: "run-failed",
+      tone: "warning",
+      message: runError,
+    })
+  }
   if (!classId) {
     alerts.push({
       id: "no-class",
@@ -77,31 +100,57 @@ export default function Main({
       message: `활성 자리 수(${enabledSeatCount})와 학생 수(${currentStudentCount})가 다릅니다.`,
     })
   }
-  if (classId && alerts.length === 0) {
-    alerts.push({
-      id: "ready",
-      tone: "info",
-      message: "실행 준비가 완료되었습니다. 규칙을 확인한 뒤 자리 배치를 실행하세요.",
-    })
+
+  const handleRunSeatRandomization = async () => {
+    if (!classId || isRunning) {
+      return
+    }
+
+    if (!isSeatCountMatched) {
+      setRunError("활성 자리 수와 학생 수가 같아야 배치를 실행할 수 있습니다.")
+      return
+    }
+
+    setIsRunning(true)
+    setRunError("")
+
+    try {
+      const result = await randomizeSeatsForClass(classId)
+
+      if (!result.success) {
+        setRunError(result.error)
+        setIsRunning(false)
+        return
+      }
+
+      setLatestLayoutCreatedAt(new Date().toISOString())
+      router.push(`/history/${result.layoutId}`)
+    } catch (error) {
+      console.error("Error running seat randomization:", error)
+      setRunError("자리 배치 실행 중 오류가 발생했습니다. 다시 시도해주세요.")
+      setIsRunning(false)
+    }
   }
 
   return (
-    <div className="w-full max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <div className="space-y-3">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">자리 배치 생성</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            실행 전 상태를 확인하고, 규칙을 점검한 뒤 자리 배치를 실행하세요.
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{mainTitle}</h1>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>자리 배치 실행</CardTitle>
+          <CardTitle>자리 배치</CardTitle>
           <CardDescription>
-            현재 구조/규칙/학생 정보를 바탕으로 새 배치를 생성합니다.
+            현재 학생 정보, 자리 구조와 규칙을 바탕으로 새로운 자리를 랜덤 배치합니다.
           </CardDescription>
+          {latestLayoutCreatedAt ? (
+            <p className="text-sm text-muted-foreground">
+              마지막 배치: {formatSeoulDateLong(latestLayoutCreatedAt)} ({formatSeoulRelativeDay(latestLayoutCreatedAt)})
+            </p>
+          ) : null}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -118,7 +167,20 @@ export default function Main({
               </div>
             ))}
           </div>
-          <Button type="button" size="lg">자리 배치 실행</Button>
+          <Button
+            type="button"
+            size="lg"
+            className="text-lg font-semibold"
+            onClick={handleRunSeatRandomization}
+            disabled={
+              isRunning ||
+              !classId ||
+              !isSeatCountMatched ||
+              currentStudentCount === 0
+            }
+          >
+            {isRunning ? "배치 실행 중..." : "자리 새로 배치하기"}
+          </Button>
         </CardContent>
       </Card>
 

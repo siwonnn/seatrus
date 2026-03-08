@@ -177,3 +177,49 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-card-area,
+  .print-card-area * {
+    visibility: visible !important;
+  }
+
+  .print-card-area {
+    --print-scale: 1;
+    position: absolute !important;
+    left: 12mm;
+    top: 12mm;
+    width: calc((297mm - 24mm) / var(--print-scale)) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transform: scale(var(--print-scale));
+    transform-origin: top left;
+    break-inside: avoid;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

@@ -100,7 +100,7 @@ export default function RuleSettings({
           <div className="grid grid-cols-[1fr_auto] items-center gap-3">
             <div className="space-y-1">
               <p className="text-base font-semibold text-foreground">연속 맨 뒷자리 방지</p>
-              <p className="text-sm text-muted-foreground">특정 학생이 연속으로 맨 뒷자리에 배정되지 않도록 합니다.</p>
+              <p className="text-sm text-muted-foreground">연속으로 맨 뒷자리에 배정되는 학생이 없도록 합니다.</p>
             </div>
             <Switch
               checked={preventBackToBack}

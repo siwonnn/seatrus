@@ -42,6 +42,8 @@ export interface SeatLayout {
   created_at: string
   organization_id: string
   class_id: string
+  rows: number
+  columns: number
 }
 
 export interface Seat {

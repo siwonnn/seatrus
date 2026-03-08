@@ -105,3 +105,20 @@ export async function updateClassRules(
 
   return data as Class
 }
+
+export async function getClassById(classId: string): Promise<Class | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("classes")
+    .select("*")
+    .eq("id", classId)
+    .single()
+
+  if (error) {
+    console.error("Error fetching class by id:", error)
+    return null
+  }
+
+  return data as Class
+}

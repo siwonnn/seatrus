@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Class } from "@/types/database"
 
@@ -43,14 +44,14 @@ export default function AppShell({
           <div className="flex items-center gap-2">
             <Button
               asChild
-              variant={pathname === "/main" ? "default" : "outline"}
+              variant={pathname.startsWith("/main") ? "default" : "outline"}
               size="sm"
             >
               <Link href="/main">메인</Link>
             </Button>
             <Button
               asChild
-              variant={pathname === "/history" ? "default" : "outline"}
+              variant={pathname.startsWith("/history") ? "default" : "outline"}
               size="sm"
             >
               <Link href="/history">히스토리</Link>
@@ -65,10 +66,12 @@ export default function AppShell({
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="icon"
+              aria-label="로그아웃"
+              title="로그아웃"
               onClick={() => signOut({ redirect: true, callbackUrl: "/login" })}
             >
-              로그아웃
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
