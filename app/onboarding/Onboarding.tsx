@@ -13,9 +13,13 @@ import {
 import { submitOnboarding } from "./actions"
 import SchoolInput from "@/components/SchoolInput"
 
-export default function Onboarding() {
+interface OnboardingProps {
+	fixedSchoolName: string | null
+}
+
+export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 	const router = useRouter()
-	const [school, setSchool] = useState("")
+	const [school, setSchool] = useState(fixedSchoolName ?? "")
 	const [grade, setGrade] = useState<number | "">("")
 	const [className, setClassName] = useState("")
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,7 +72,24 @@ export default function Onboarding() {
 					</CardHeader>
 					<CardContent>
 						<form className="space-y-6" onSubmit={handleSubmit}>
-							<SchoolInput value={school} onChange={setSchool} />
+							{fixedSchoolName ? (
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-foreground" htmlFor="school-fixed">
+										학교
+									</label>
+									<div
+										id="school-fixed"
+										className="h-11 w-full rounded-md border border-border bg-muted/30 px-3 text-sm text-foreground flex items-center"
+									>
+										{fixedSchoolName}
+									</div>
+									<p className="text-xs text-muted-foreground">
+										학교 이메일 도메인으로 자동 설정되었습니다.
+									</p>
+								</div>
+							) : (
+								<SchoolInput value={school} onChange={setSchool} />
+							)}
 
 							<div className="grid gap-6 md:grid-cols-2">
 								<div className="space-y-2">

@@ -5,6 +5,9 @@ import { updateAppUser } from "@/lib/database/users"
 import { getOrCreateOrganization } from "@/lib/database/organizations"
 import { createClass } from "@/lib/database/classes"
 
+const HAFS_DOMAIN = "hafs.hs.kr"
+const HAFS_SCHOOL_NAME = "용인한국외국어대학교부설고등학교"
+
 interface OnboardingData {
   organizationName: string
   grade: number
@@ -17,9 +20,13 @@ export async function submitOnboarding(data: OnboardingData) {
     return { ok: false, message: "Unauthorized" }
   }
 
+  const email = session.user.email?.toLowerCase() ?? ""
+  const emailDomain = email.includes("@") ? email.split("@")[1] : ""
+  const organizationName = emailDomain === HAFS_DOMAIN ? HAFS_SCHOOL_NAME : data.organizationName
+
   try {
     // get or create organization
-    const organization = await getOrCreateOrganization(data.organizationName)
+    const organization = await getOrCreateOrganization(organizationName)
     if (!organization) {
       return { ok: false, message: "Failed to create or fetch organization" }
     }
