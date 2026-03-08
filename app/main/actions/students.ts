@@ -1,6 +1,6 @@
 "use server"
 
-import { getStudentsByClassId, createStudent, deleteStudent } from "@/lib/database/students"
+import { createStudent, deleteStudent, getStudentsByClassId } from "@/lib/database/students"
 import { StudentInsert } from "@/types/database"
 
 export async function loadStudents(classId: string) {
@@ -14,8 +14,7 @@ export async function loadStudents(classId: string) {
 
 export async function addStudent(studentData: StudentInsert) {
   try {
-    const result = await createStudent(studentData)
-    return result
+    return await createStudent(studentData)
   } catch (error) {
     console.error("Error adding student:", error)
     return { success: false, error: "학생 추가에 실패했습니다." }
@@ -24,8 +23,7 @@ export async function addStudent(studentData: StudentInsert) {
 
 export async function removeStudent(studentId: string) {
   try {
-    const success = await deleteStudent(studentId)
-    return success
+    return await deleteStudent(studentId)
   } catch (error) {
     console.error("Error deleting student:", error)
     return false

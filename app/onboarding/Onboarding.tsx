@@ -42,7 +42,7 @@ export default function Onboarding() {
 			})
 
 			if (result.ok) {
-				router.push("/create-seats")
+				router.push("/main")
 			} else {
 				setError("설정 중 오류가 발생했습니다. " + result.message)
 			}

@@ -1,15 +1,21 @@
-import { getServerSideSession } from "@/lib/session"
-import { getAppUser } from "@/lib/database/users"
 import { getClassesByUserId } from "@/lib/database/classes"
-import { redirect } from "next/navigation"
-import DashboardShell from "./DashboardShell"
 import { getOrganizationById } from "@/lib/database/organizations"
+import { getAppUser } from "@/lib/database/users"
+import { getServerSideSession } from "@/lib/session"
+import { Class } from "@/types/database"
+import { redirect } from "next/navigation"
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+interface AppShellContext {
+  user: {
+    id: string
+    name: string | null
+    email: string | null
+  }
+  organizationName: string | null
+  classData: Class | null
+}
+
+export async function getAppShellContext(): Promise<AppShellContext> {
   const session = await getServerSideSession()
 
   if (!session) {
@@ -29,15 +35,13 @@ export default async function DashboardLayout({
     organizationName = organization?.name || null
   }
 
-  const classData = classes[0] || null
-
-  return (
-    <DashboardShell
-      user={appUser}
-      organizationName={organizationName}
-      classData={classData}
-    >
-      {children}
-    </DashboardShell>
-  )
+  return {
+    user: {
+      id: appUser.id,
+      name: appUser.name,
+      email: appUser.email,
+    },
+    organizationName,
+    classData: classes[0] || null,
+  }
 }

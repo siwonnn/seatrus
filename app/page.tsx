@@ -10,7 +10,7 @@ export default async function HomePage() {
   if (session) {
     const appUser = await getAppUser(session.user.id)
     if (appUser?.onboarded) {
-      redirect("/create-seats")
+      redirect("/main")
     } else {
       redirect("/onboarding")
     }
