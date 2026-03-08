@@ -69,7 +69,7 @@ export default function AppShell({
               size="icon"
               aria-label="로그아웃"
               title="로그아웃"
-              onClick={() => signOut({ redirect: true, callbackUrl: "/login" })}
+              onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
             >
               <LogOut className="h-4 w-4" />
             </Button>

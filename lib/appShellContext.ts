@@ -19,7 +19,7 @@ export async function getAppShellContext(): Promise<AppShellContext> {
   const session = await getServerSideSession()
 
   if (!session) {
-    redirect("/login")
+    redirect("/")
   }
 
   const appUser = await getAppUser(session.user.id)

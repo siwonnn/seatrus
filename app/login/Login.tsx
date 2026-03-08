@@ -13,11 +13,7 @@ export default function Login() {
 
       <Card className="relative w-full max-w-md px-8 py-8 border border-border/60 bg-card/90 shadow-lg backdrop-blur">
         <div className="text-center mb-6">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-accent text-xl shadow-sm">
-            🍊
-          </div>
           <h1 className="text-2xl font-bold text-gray-900">로그인</h1>
-          <p className="text-sm text-muted-foreground mt-2">소셜 계정으로 간편하게 시작하세요</p>
         </div>
 
         <div className="space-y-4">
@@ -47,6 +43,7 @@ export default function Login() {
             <span>구글로 로그인</span>
           </Button>
 
+          {/*
           <Button
             onClick={() => signIn("naver", { callbackUrl: "/" })}
             className="w-full h-12 gap-3 px-6 text-lg font-semibold bg-[#03A94D] hover:bg-[#02b350] text-white rounded-xl shadow-sm"
@@ -67,6 +64,7 @@ export default function Login() {
             </svg>
             <span>카카오로 로그인</span>
           </Button>
+          */}
         </div>
       </Card>
     </div>

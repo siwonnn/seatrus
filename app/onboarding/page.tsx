@@ -7,7 +7,7 @@ export default async function OnboardingPage() {
   const session = await getServerSideSession()
   
   if (!session) {
-    redirect("/login")
+    redirect("/")
   }
 
   // check if user completed onboarding
