@@ -15,7 +15,7 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   title: "Seatrus",
   description:
-    "Seatrus",
+    "공정하고 간편한 자리 배치",
   icons: {
     icon: [
       {
