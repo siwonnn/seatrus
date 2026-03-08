@@ -20,6 +20,7 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const numberInputRef = useRef<HTMLInputElement>(null)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setStudents(initialStudents)
@@ -89,8 +90,18 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
     setIsLoading(false)
   }
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
+  const handleNumberEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return
+    }
+
+    event.preventDefault()
+    nameInputRef.current?.focus()
+  }
+
+  const handleNameEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
+      event.preventDefault()
       numberInputRef.current?.focus()
       handleAddStudent()
     }
@@ -119,16 +130,17 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
               placeholder="번호"
               value={studentNumber}
               onChange={(event) => setStudentNumber(event.target.value)}
-              onKeyDown={handleKeyPress}
+              onKeyDown={handleNumberEnter}
             />
           </div>
           <div className="flex-1">
             <Input
+              ref={nameInputRef}
               type="text"
               placeholder="이름"
               value={studentName}
               onChange={(event) => setStudentName(event.target.value)}
-              onKeyDown={handleKeyPress}
+              onKeyDown={handleNameEnter}
             />
           </div>
           <Button
