@@ -33,7 +33,7 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault()
-		if (!isValid) return
+		if (!isValid || isSubmitting) return
 
 		setIsSubmitting(true)
 		setError("")
@@ -46,14 +46,14 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 			})
 
 			if (result.ok) {
-				router.push("/main")
+				router.replace("/main")
 			} else {
 				setError("설정 중 오류가 발생했습니다. " + result.message)
+				setIsSubmitting(false)
 			}
 		} catch (err) {
 			console.error("Onboarding error:", err)
 			setError("설정 중 오류가 발생했습니다.")
-		} finally {
 			setIsSubmitting(false)
 		}
 	}
