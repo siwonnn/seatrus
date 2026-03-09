@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
 import { SessionProviderClient } from "./providers/SessionProviderClient"
+import { Analytics } from "@vercel/analytics/next"
 
 // Initialize fonts
 const pretendard = localFont({
@@ -42,7 +43,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="bf17bf5d-f234-4690-bd12-6041598a93cb"></script>
+      </head>
       <body className={`${pretendard.className} antialiased`}>
+        <Analytics />
         <SessionProviderClient>
           {children}
         </SessionProviderClient>
