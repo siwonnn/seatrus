@@ -25,6 +25,7 @@ import { CircleHelp, LayoutGrid, User } from "lucide-react"
 import { randomizeSeatsForClass } from "./actions/randomize-seats"
 import { saveStructureDraft } from "./actions/structure"
 import { formatSeoulDateLong, formatSeoulRelativeDay } from "@/lib/date"
+import posthog from "posthog-js"
 
 interface MainProps {
   classId: string | null
@@ -183,10 +184,26 @@ export default function Main({
     )
 
     if (!result.success) {
+      posthog.capture("seat_structure_save_failed", {
+        class_id: classId,
+        rows: structure.rows,
+        columns: structure.columns,
+        disabled_seat_count: structure.disabledSeats.length,
+        error: result.error,
+      })
       setStructureSaveError(result.error)
       setIsSavingStructure(false)
       return
     }
+
+    posthog.capture("seat_structure_saved", {
+      class_id: classId,
+      rows: result.rows,
+      columns: result.columns,
+      disabled_seat_count: structure.disabledSeats.length,
+      enabled_seat_count: Math.max(0, result.rows * result.columns - structure.disabledSeats.length),
+      student_count: currentStudentCount,
+    })
 
     setPersistedStructure({
       rows: result.rows,
@@ -204,6 +221,13 @@ export default function Main({
     }
 
     if (!isSeatCountMatched) {
+      posthog.capture("seat_randomization_failed", {
+        class_id: classId,
+        mode,
+        error: "seat_count_mismatch",
+        enabled_seat_count: enabledSeatCount,
+        student_count: currentStudentCount,
+      })
       setRunError("활성 자리 수와 학생 수가 같아야 배치를 실행할 수 있습니다.")
       return
     }
@@ -218,11 +242,24 @@ export default function Main({
       })
 
       if (!result.success) {
+        posthog.capture("seat_randomization_failed", {
+          class_id: classId,
+          mode,
+          is_demo: mode === "demo",
+          error: result.error,
+        })
         setRunError(result.error)
         setIsRunning(false)
         setRunningMode(null)
         return
       }
+
+      posthog.capture("seat_randomization_completed", {
+        class_id: classId,
+        mode,
+        is_demo: mode === "demo",
+        layout_id: result.layoutId,
+      })
 
       if (mode === "official") {
         setLatestLayoutCreatedAt(new Date().toISOString())
@@ -230,6 +267,12 @@ export default function Main({
       router.push(`/history/${result.layoutId}`)
     } catch (error) {
       console.error("Error running seat randomization:", error)
+      posthog.capture("seat_randomization_failed", {
+        class_id: classId,
+        mode,
+        is_demo: mode === "demo",
+        error: error instanceof Error ? error.message : "unknown_error",
+      })
       setRunError("자리 배치 실행 중 오류가 발생했습니다. 다시 시도해주세요.")
       setIsRunning(false)
       setRunningMode(null)

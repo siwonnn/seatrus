@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { saveClassRules } from "@/app/main/actions/rules"
+import posthog from "posthog-js"
 
 interface RuleSettingsProps {
   classId: string | null
@@ -43,10 +44,22 @@ export default function RuleSettings({
     const result = await saveClassRules(classId, nextRules)
 
     if (result.success) {
+      posthog.capture("class_rule_changed", {
+        class_id: classId,
+        changed_rule: key,
+        prevent_same_seat: result.prevent_same_seat,
+        prevent_same_pair: result.prevent_same_pair,
+        prevent_back_to_back: result.prevent_back_to_back,
+      })
       setPreventSameSeat(result.prevent_same_seat)
       setPreventSamePair(result.prevent_same_pair)
       setPreventBackToBack(result.prevent_back_to_back)
     } else {
+      posthog.capture("class_rule_change_failed", {
+        class_id: classId,
+        changed_rule: key,
+        error: result.error || "unknown_error",
+      })
       setError(result.error || "규칙 저장에 실패했습니다.")
     }
 

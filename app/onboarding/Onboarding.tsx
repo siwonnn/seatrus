@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card"
 import { submitOnboarding } from "./actions"
 import SchoolInput from "@/components/SchoolInput"
+import posthog from "posthog-js"
 
 interface OnboardingProps {
 	fixedSchoolName: string | null
@@ -46,13 +47,32 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 			})
 
 			if (result.ok) {
+				posthog.capture("onboarding_completed", {
+					organization_name: school.trim(),
+					grade: grade as number,
+					class_name: className.trim(),
+					is_school_fixed: Boolean(fixedSchoolName),
+					class_id: result.classId,
+				})
 				router.replace("/main")
 			} else {
+				posthog.capture("onboarding_failed", {
+					organization_name: school.trim(),
+					grade: typeof grade === "number" ? grade : null,
+					class_name: className.trim(),
+					error: result.message,
+				})
 				setError("설정 중 오류가 발생했습니다. " + result.message)
 				setIsSubmitting(false)
 			}
 		} catch (err) {
 			console.error("Onboarding error:", err)
+			posthog.capture("onboarding_failed", {
+				organization_name: school.trim(),
+				grade: typeof grade === "number" ? grade : null,
+				class_name: className.trim(),
+				error: err instanceof Error ? err.message : "unknown_error",
+			})
 			setError("설정 중 오류가 발생했습니다.")
 			setIsSubmitting(false)
 		}
