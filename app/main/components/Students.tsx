@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Student } from "@/types/database"
 import { addStudent, removeStudent } from "@/app/main/actions/students"
+import posthog from "posthog-js"
 
 interface StudentsProps {
   classId: string | null
@@ -69,8 +70,18 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
     const addedStudent = result.student
 
     if (result.success && addedStudent) {
+      posthog.capture("student_added", {
+        class_id: classId,
+        student_id: addedStudent.id,
+        student_number: addedStudent.number,
+      })
       setStudents((previous) => [...previous, addedStudent].sort((a, b) => a.number - b.number))
     } else {
+      posthog.capture("student_add_failed", {
+        class_id: classId,
+        student_number: number,
+        error: result.error || "unknown_error",
+      })
       setError(result.error || "학생 추가에 실패했습니다.")
     }
 
@@ -82,8 +93,16 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
     const success = await removeStudent(studentId)
 
     if (success) {
+      posthog.capture("student_removed", {
+        class_id: classId,
+        student_id: studentId,
+      })
       setStudents((previous) => previous.filter((student) => student.id !== studentId))
     } else {
+      posthog.capture("student_remove_failed", {
+        class_id: classId,
+        student_id: studentId,
+      })
       setError("학생 삭제에 실패했습니다.")
     }
 
