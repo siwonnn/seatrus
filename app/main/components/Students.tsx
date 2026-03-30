@@ -20,6 +20,7 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
   const [studentName, setStudentName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isComposingName, setIsComposingName] = useState(false)
   const numberInputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -56,8 +57,6 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
     }
 
     setIsLoading(true)
-    setStudentNumber("")
-    setStudentName("")
     setError("")
 
     const result = await addStudent({
@@ -76,6 +75,10 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
         student_number: addedStudent.number,
       })
       setStudents((previous) => [...previous, addedStudent].sort((a, b) => a.number - b.number))
+      const nextNumber = number + 1
+      setStudentNumber(nextNumber <= 100 ? String(nextNumber) : "")
+      setStudentName("")
+      nameInputRef.current?.focus()
     } else {
       posthog.capture("student_add_failed", {
         class_id: classId,
@@ -119,11 +122,16 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
   }
 
   const handleNameEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault()
-      numberInputRef.current?.focus()
-      handleAddStudent()
+    if (event.key !== "Enter") {
+      return
     }
+
+    if (event.nativeEvent.isComposing || isComposingName) {
+      return
+    }
+
+    event.preventDefault()
+    handleAddStudent()
   }
 
   const isFormValid = studentNumber.trim() !== "" && studentName.trim() !== ""
@@ -157,8 +165,11 @@ export default function Students({ classId, initialStudents, onStudentsChange }:
               ref={nameInputRef}
               type="text"
               placeholder="이름"
+              lang="ko"
               value={studentName}
               onChange={(event) => setStudentName(event.target.value)}
+              onCompositionStart={() => setIsComposingName(true)}
+              onCompositionEnd={() => setIsComposingName(false)}
               onKeyDown={handleNameEnter}
             />
           </div>
