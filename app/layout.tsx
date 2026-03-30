@@ -4,6 +4,7 @@ import "./globals.css"
 import localFont from "next/font/local"
 import { SessionProviderClient } from "./providers/SessionProviderClient"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Initialize fonts
 const pretendard = localFont({
@@ -48,10 +49,10 @@ export default function RootLayout({
       </head>
       <body className={`${pretendard.className} antialiased`}>
         <Analytics />
+        <SpeedInsights />
         <SessionProviderClient>
           {children}
         </SessionProviderClient>
-        
       </body>
     </html>
   )
