@@ -4,14 +4,16 @@ import { useEffect, useRef } from "react"
 import { Printer } from "lucide-react"
 import { useReactToPrint } from "react-to-print"
 import { Button } from "@/components/ui/button"
+import { notifySeatLayoutPrinted } from "./actions"
 
 interface PrintSeatLayoutButtonProps {
   targetId: string
+  layoutId: string
 }
 
 const pxToMm = (px: number) => (px * 25.4) / 96
 
-export default function PrintSeatLayoutButton({ targetId }: PrintSeatLayoutButtonProps) {
+export default function PrintSeatLayoutButton({ targetId, layoutId }: PrintSeatLayoutButtonProps) {
   const contentRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -38,6 +40,13 @@ export default function PrintSeatLayoutButton({ targetId }: PrintSeatLayoutButto
     const scale = Math.min(scaleX, scaleY, 1)
 
     el.style.setProperty("--print-scale", scale.toString())
+
+    try {
+      await notifySeatLayoutPrinted(layoutId)
+    } catch (error) {
+      console.error("Error notifying printed seat layout:", error)
+    }
+
     await reactToPrintFn()
   }
 

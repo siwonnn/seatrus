@@ -59,7 +59,7 @@ export default async function HistoryDetailPage({ params }: HistoryDetailPagePro
             </p>
           </div>
           <div className="ml-auto print-hide">
-            <PrintSeatLayoutButton targetId="seat-layout-print-card" />
+            <PrintSeatLayoutButton targetId="seat-layout-print-card" layoutId={layout.id} />
           </div>
         </div>
 
