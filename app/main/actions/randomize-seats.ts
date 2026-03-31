@@ -2,9 +2,12 @@
 
 import { getDisabledSeatsByClassId } from "@/lib/database/classDisabledSeats"
 import { getClassById } from "@/lib/database/classes"
+import { getOrganizationById } from "@/lib/database/organizations"
 import { createSeatLayout, deleteSeatLayout, getLatestSeatLayoutByClassId } from "@/lib/database/seatLayouts"
 import { createSeatsBulk, getSeatsByLayoutId } from "@/lib/database/seats"
 import { getStudentsByClassId } from "@/lib/database/students"
+import { sendSlackWebhook } from "@/lib/slack"
+import { getServerSideSession } from "@/lib/session"
 import { SeatInsert, Student } from "@/types/database"
 
 const MAX_ATTEMPTS = 2000
@@ -293,6 +296,27 @@ export async function randomizeSeatsForClass(
     await deleteSeatLayout(layout.id)
     return { success: false, error: "배치 좌석 저장에 실패했습니다." }
   }
+
+  const [session, organization] = await Promise.all([
+    getServerSideSession(),
+    getOrganizationById(classData.organization_id),
+  ])
+
+  const userName = session?.user?.name || "Unknown"
+  const organizationName = organization?.name || "Unknown"
+  const classInfo = `${classData.grade}학년 ${classData.class_name}반`
+  const mode = isDemo ? "demo" : "live"
+
+  await sendSlackWebhook(
+    [
+      "Seatrus - Seat Randomized",
+      `user: ${userName}`,
+      `organization: ${organizationName}`,
+      `class: ${classInfo}`,
+      `mode: ${mode}`,
+      `layoutId: ${layout.id}`,
+    ].join("\n")
+  )
 
   return { success: true, layoutId: layout.id }
 }

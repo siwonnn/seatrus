@@ -5,6 +5,7 @@ import NaverProvider from "next-auth/providers/naver"
 import KakaoProvider from "next-auth/providers/kakao"
 import { UserFields } from "@/types/next-auth"
 import { initializeAppUser } from "@/lib/database/users"
+import { sendSlackWebhook } from "@/lib/slack"
 
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter({
@@ -38,6 +39,11 @@ export const authOptions: NextAuthOptions = {
   events: {
     async createUser({ user }) {
       await initializeAppUser(user.id, user.name || null, user.email || null)
-    }
-  }
+      const displayName = user.name || "Unknown"
+      const email = user.email || "No email"
+      await sendSlackWebhook(
+        `Seatrus - New User ${displayName} ${email}\nuserId: ${user.id}`
+      )
+    },
+  },
 }
