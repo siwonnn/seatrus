@@ -4,8 +4,17 @@ import GoogleProvider from "next-auth/providers/google"
 import NaverProvider from "next-auth/providers/naver"
 import KakaoProvider from "next-auth/providers/kakao"
 import { UserFields } from "@/types/next-auth"
-import { initializeAppUser } from "@/lib/database/users"
+import { getAppUser, initializeAppUser } from "@/lib/database/users"
 import { sendSlackWebhook } from "@/lib/slack"
+
+function toPlainText(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter({
@@ -32,15 +41,26 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, user }) {
-      session.user = user as UserFields
+      const appUser = await getAppUser(user.id)
+      const appUserName = toPlainText(appUser?.name)
+      const adapterUserName = toPlainText(user.name)
+      const email = toPlainText(user.email) || ""
+
+      session.user = {
+        ...session.user,
+        id: user.id,
+        name: appUserName || adapterUserName || email || "Unknown",
+        email,
+      } as UserFields
+
       return session
     },
   },
   events: {
     async createUser({ user }) {
       await initializeAppUser(user.id, user.name || null, user.email || null)
-      const displayName = user.name || "Unknown"
-      const email = user.email || "No email"
+      const displayName = toPlainText(user.name) || "Unknown"
+      const email = toPlainText(user.email) || "No email"
       await sendSlackWebhook(
         `Seatrus - New User ${displayName} ${email}\nuserId: ${user.id}`
       )
