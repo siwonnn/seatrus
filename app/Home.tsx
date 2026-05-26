@@ -1,9 +1,17 @@
 "use client"
 
 import { signIn } from "next-auth/react"
+import { useProgress } from "@bprogress/next"
 import { Button } from "@/components/ui/button"
 
 export default function Home() {
+  const { start } = useProgress()
+
+  const handleSignIn = () => {
+    start()
+    signIn("google")
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-center px-4 py-10 text-center">
@@ -16,7 +24,7 @@ export default function Home() {
         </h1>
 
         <div className="mt-8">
-          <Button size="lg" variant="default" onClick={() => signIn("google")}>
+          <Button size="lg" variant="default" onClick={handleSignIn}>
             Google로 로그인
           </Button>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useProgress } from "@bprogress/next"
 import { Button } from "@/components/ui/button"
 import {
 	Card,
@@ -20,6 +21,7 @@ interface OnboardingProps {
 
 export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 	const router = useRouter()
+	const { start: startProgress, stop: stopProgress } = useProgress()
 	const [school, setSchool] = useState(fixedSchoolName ?? "")
 	const [grade, setGrade] = useState<number | "">("")
 	const [className, setClassName] = useState("")
@@ -38,6 +40,7 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 
 		setIsSubmitting(true)
 		setError("")
+		startProgress()
 
 		try {
 			const result = await submitOnboarding({
@@ -64,6 +67,7 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 				})
 				setError("설정 중 오류가 발생했습니다. " + result.message)
 				setIsSubmitting(false)
+				stopProgress()
 			}
 		} catch (err) {
 			console.error("Onboarding error:", err)
@@ -75,6 +79,7 @@ export default function Onboarding({ fixedSchoolName }: OnboardingProps) {
 			})
 			setError("설정 중 오류가 발생했습니다.")
 			setIsSubmitting(false)
+			stopProgress()
 		}
 	}
 

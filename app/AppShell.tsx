@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { useProgress } from "@bprogress/next"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Class } from "@/types/database"
@@ -25,6 +26,12 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname()
+  const { start } = useProgress()
+
+  const handleSignOut = () => {
+    start()
+    signOut({ redirect: true, callbackUrl: "/" })
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,7 +76,7 @@ export default function AppShell({
               size="icon"
               aria-label="로그아웃"
               title="로그아웃"
-              onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+              onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
             </Button>

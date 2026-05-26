@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useProgress } from "@bprogress/next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -55,6 +56,7 @@ export default function Main({
   className,
 }: MainProps) {
   const router = useRouter()
+  const { start: startProgress, stop: stopProgress } = useProgress()
   const [students, setStudents] = useState<Student[]>(initialStudents)
   const [structure, setStructure] = useState<{
     rows: number
@@ -175,6 +177,7 @@ export default function Main({
 
     setIsSavingStructure(true)
     setStructureSaveError("")
+    startProgress()
 
     const result = await saveStructureDraft(
       classId,
@@ -193,6 +196,7 @@ export default function Main({
       })
       setStructureSaveError(result.error)
       setIsSavingStructure(false)
+      stopProgress()
       return
     }
 
@@ -212,6 +216,7 @@ export default function Main({
     })
 
     setIsSavingStructure(false)
+    stopProgress()
     setStructureDialogOpen(false)
   }
 
@@ -235,6 +240,7 @@ export default function Main({
     setIsRunning(true)
     setRunningMode(mode)
     setRunError("")
+    startProgress()
 
     try {
       const result = await randomizeSeatsForClass(classId, {
@@ -251,6 +257,7 @@ export default function Main({
         setRunError(result.error)
         setIsRunning(false)
         setRunningMode(null)
+        stopProgress()
         return
       }
 
@@ -276,6 +283,7 @@ export default function Main({
       setRunError("자리 배치 실행 중 오류가 발생했습니다. 다시 시도해주세요.")
       setIsRunning(false)
       setRunningMode(null)
+      stopProgress()
     }
   }
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.11.1",
+    "@bprogress/next": "^3.2.12",
     "@next-auth/supabase-adapter": "^0.2.1",
     "@posthog/react": "^1.8.2",
     "@radix-ui/react-slot": "^1.2.4",

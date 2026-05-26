@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Printer } from "lucide-react"
 import { useReactToPrint } from "react-to-print"
+import { useProgress } from "@bprogress/next"
 import { Button } from "@/components/ui/button"
 import { notifySeatLayoutPrinted } from "./actions"
 
@@ -15,6 +16,8 @@ const pxToMm = (px: number) => (px * 25.4) / 96
 
 export default function PrintSeatLayoutButton({ targetId, layoutId }: PrintSeatLayoutButtonProps) {
   const contentRef = useRef<HTMLElement | null>(null)
+  const [isPrinting, setIsPrinting] = useState(false)
+  const { start, stop } = useProgress()
 
   useEffect(() => {
     contentRef.current = document.getElementById(targetId)
@@ -26,9 +29,12 @@ export default function PrintSeatLayoutButton({ targetId, layoutId }: PrintSeatL
 
   const handlePrint = async () => {
     const el = contentRef.current
-    if (!el) {
+    if (!el || isPrinting) {
       return
     }
+
+    setIsPrinting(true)
+    start()
 
     const parentWidthMm = 297
     const parentHeightMm = 210
@@ -48,12 +54,15 @@ export default function PrintSeatLayoutButton({ targetId, layoutId }: PrintSeatL
     }
 
     await reactToPrintFn()
+
+    stop()
+    setIsPrinting(false)
   }
 
   return (
-    <Button type="button" variant="default" className="gap-2" onClick={handlePrint}>
+    <Button type="button" variant="default" className="gap-2" onClick={handlePrint} disabled={isPrinting}>
       <Printer className="h-4 w-4" />
-      교사용 자리 배치도 인쇄
+      {isPrinting ? "준비 중..." : "교사용 자리 배치도 인쇄"}
     </Button>
   )
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
 import { SessionProviderClient } from "./providers/SessionProviderClient"
+import ProgressBarProvider from "./providers/ProgressBarProvider"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -50,9 +51,11 @@ export default function RootLayout({
       <body className={`${pretendard.className} antialiased`}>
         <Analytics />
         <SpeedInsights />
-        <SessionProviderClient>
-          {children}
-        </SessionProviderClient>
+        <ProgressBarProvider>
+          <SessionProviderClient>
+            {children}
+          </SessionProviderClient>
+        </ProgressBarProvider>
       </body>
     </html>
   )
