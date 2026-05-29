@@ -85,7 +85,7 @@ export default function RuleSettings({
           <div className="grid grid-cols-[1fr_auto] items-center gap-3">
             <div className="space-y-1">
               <p className="text-base font-semibold text-foreground">같은 자리 방지</p>
-              <p className="text-sm text-muted-foreground">이전 배치와 같은 자리에 같은 학생이 다시 배정되는 것을 막습니다.</p>
+              <p className="text-sm text-muted-foreground">직전 배치와 같은 자리에 같은 학생이 다시 배정되는 것을 막습니다.</p>
             </div>
             <Switch
               checked={preventSameSeat}
@@ -99,7 +99,7 @@ export default function RuleSettings({
           <div className="grid grid-cols-[1fr_auto] items-center gap-3">
             <div className="space-y-1">
               <p className="text-base font-semibold text-foreground">같은 짝 방지</p>
-              <p className="text-sm text-muted-foreground">이전 배치에서 짝이었던 학생들이 다시 짝이 되지 않도록 합니다.</p>
+              <p className="text-sm text-muted-foreground">직전 배치에서 짝이었던 학생들이 다시 짝이 되지 않도록 합니다.</p>
             </div>
             <Switch
               checked={preventSamePair}

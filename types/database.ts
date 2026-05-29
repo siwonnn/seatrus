@@ -45,6 +45,7 @@ export interface SeatLayout {
   rows: number
   columns: number
   is_demo: boolean
+  deleted_at: string | null
 }
 
 export interface Seat {
@@ -62,7 +63,7 @@ export type OrganizationInsert = Omit<Organization, 'id' | 'created_at'>
 export type AppUserInsert = Omit<AppUser, 'created_at'>
 export type ClassInsert = Omit<Class, 'id' | 'created_at'>
 export type StudentInsert = Omit<Student, 'id' | 'created_at'>
-export type SeatLayoutInsert = Omit<SeatLayout, 'id' | 'created_at'>
+export type SeatLayoutInsert = Omit<SeatLayout, 'id' | 'created_at' | 'deleted_at'> & { deleted_at?: string | null }
 export type SeatInsert = Omit<Seat, 'id'>
 
 // Update types

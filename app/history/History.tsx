@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatSeoulDateTime } from "@/lib/date"
 import { SeatLayout } from "@/types/database"
+import DeleteLayoutButton from "./DeleteLayoutButton"
 
 interface HistoryProps {
   layouts: SeatLayout[]
@@ -34,9 +35,12 @@ export default function History({ layouts }: HistoryProps) {
                     {formatSeoulDateTime(layout.created_at)}
                   </p>
                 </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/history/${layout.id}`}>결과 보기</Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/history/${layout.id}`}>결과 보기</Link>
+                  </Button>
+                  <DeleteLayoutButton layoutId={layout.id} />
+                </div>
               </CardHeader>
             </Card>
           ))}

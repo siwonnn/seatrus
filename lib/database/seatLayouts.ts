@@ -38,7 +38,7 @@ export async function deleteSeatLayout(layoutId: string): Promise<boolean> {
 
   const { error } = await supabase
     .from("seat_layouts")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", layoutId)
 
   if (error) {
@@ -60,6 +60,7 @@ export async function getLatestSeatLayoutByClassId(
     .from("seat_layouts")
     .select("*")
     .eq("class_id", classId)
+    .is("deleted_at", null)
 
   if (!includeDemo) {
     query = query.eq("is_demo", false)
@@ -89,6 +90,7 @@ export async function getSeatLayoutsByClassId(
     .select("*")
     .eq("class_id", classId)
     .eq("is_demo", false)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit)
 
@@ -125,6 +127,7 @@ export async function getSeatLayoutHistoryForAdmin(
   const { data: layouts, error: layoutsError } = await supabase
     .from("seat_layouts")
     .select("id, created_at, class_id, is_demo")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit)
 
